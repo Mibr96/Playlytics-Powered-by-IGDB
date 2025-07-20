@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Playlytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+  <header>
+    <nav class="navbar">
+      <div class="nav-left">
+      </div>
+
+      <div class="nav-center">
+        <img src="{{ url_for('static', filename='logo/logo.png') }}" alt="Playlytics Logo"
+          style="height: 40px; width: auto;">
+      </div>
+
+      <div class="nav-right">
+
+      </div>
+    </nav>
+  </header>
+
+  <div class="container" style="margin-left: auto;">
+    <div class="container">
+      <div class="content-container">
+        <div class="filter-bar">
+
+          <form method="get" action="/" class="filter-form"
+            style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+
+            <div class="filter-group search-group" style="min-width: 200px;">
+              <label for="q">Search</label>
+              <div class="search-wrapper" style="display: flex; align-items: center; padding: 0; margin: 0;">
+                <input type="text" name="q" id="q" value="{{ query }}" placeholder="Search games..." autocomplete="off"
+                  style="border-top-right-radius: 0; border-bottom-right-radius: 0;" />
+                <button type="submit" class="search-submit"
+                  style="margin: 0; border-top-left-radius: 0; border-bottom-left-radius: 0; height: 100%;">
+                  Go
+                </button>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <label for="genre">Genre</label>
+              <select name="genre" id="genre" onchange="this.form.submit()">
+                <option value="">All Genres</option>
+                {% for genre in genres %}
+                <option value="{{ genre }}" {% if selected_genre==genre %}selected{% endif %}>{{ genre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="mode">Game Mode</label>
+              <select name="mode" id="mode" onchange="this.form.submit()">
+                <option value="">All Modes</option>
+                {% for mode in modes %}
+                <option value="{{ mode }}" {% if selected_mode==mode %}selected{% endif %}>{{ mode }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="year">Release Year</label>
+              <select name="year" id="year" onchange="this.form.submit()">
+                <option value="">All Years</option>
+                {% for year in release_years %}
+                <option value="{{ year }}" {% if selected_year==year %}selected{% endif %}>{{ year }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="sort">Sort by</label>
+              <select name="sort" id="sort" onchange="this.form.submit()">
+                <option value="release_desc" {% if sort_option=='release_desc' %}selected{% endif %}>Release: Newest →
+                  Oldest</option>
+                <option value="release_asc" {% if sort_option=='release_asc' %}selected{% endif %}>Release: Oldest →
+                  Newest</option>
+                <option value="rating_desc" {% if sort_option=='rating_desc' %}selected{% endif %}>Rating: High → Low
+                </option>
+                <option value="rating_asc" {% if sort_option=='rating_asc' %}selected{% endif %}>Rating: Low → High
+                </option>
+              </select>
+            </div>
+
+            <!-- Search Submit Button (for when user types a query) -->
+            <div class="filter-group" style="margin-top: 1.8rem;">
+            </div>
+
+          </form>
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="games-grid">
+    {% for game in games %}
+    <div class="card">
+      {% if game.cover_url %}
+      <img src="{{ game.cover_url }}" alt="Cover image for {{ game.name }}" class="cover-img" />
+      {% else %}
+      <div class="no-cover">No Cover</div>
+      {% endif %}
+      <h2 class="card-title">
+        <a href="{{ url_for('game_detail', game_id=game.id) }}" style="color: white; text-decoration: none;">
+          {{ game.name }}
+        </a>
+      </h2>
+      <p class="game-meta">Release: {{ game.first_release_date | datetimeformat }}</p>
+      <p class="summary">{{ game.summary or "No summary available." }}</p>
+      <div class="card-footer">
+        <div class="rating-bar
+              {% if game.rating_display is not none %}
+                {% if game.rating_display >= 75 %}green
+                {% elif game.rating_display >= 50 %}yellow
+                {% else %}red
+                {% endif %}
+              {% else %}
+                gray
+              {% endif %}
+            ">
+          {% if game.rating_display is not none %}
+          Rating: {{ game.rating_display }} / 100
+          {% else %}
+          No rating available
+          {% endif %}
+        </div>
+        <button class="stats-button" onclick="window.location.href='{{ url_for('game_detail', game_id=game.id) }}'">
+          View Details
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+
+  <div class="pagination">
+    {% if page > 1 %}
+    <a href="{{ url_for(request.endpoint, 
+                              q=request.args.get('q', ''), 
+                              page=page-1, 
+                              genre=selected_genre, 
+                              year=selected_year,
+                              publisher=selected_publisher,
+                              sort=sort_option,
+                              theme=selected_theme,
+                              engine=selected_engine,
+                              platform=selected_platform,
+                              mode=selected_mode) }}" class="btn">Previous</a>
+    {% endif %}
+
+    Page {{ page }} of {{ total_pages }}
+
+    {% if page < total_pages %} <a href="{{ url_for(request.endpoint, 
+                              q=request.args.get('q', ''), 
+                              page=page+1, 
+                              genre=selected_genre, 
+                              year=selected_year,
+                              publisher=selected_publisher,
+                              sort=sort_option,
+                              theme=selected_theme,
+                              engine=selected_engine,
+                              platform=selected_platform,
+                              mode=selected_mode) }}" class="btn">Next</a>
+      {% endif %}
+  </div>
+  </div>
+  </div>
+</body>
+
+</html>

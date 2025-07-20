@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ game.name }} – Game Explorer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+
+<body>
+
+  <header>
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+      <div class="nav-left" aria-hidden="true"></div>
+      <div class="nav-center">
+        <a href="{{ url_for('home') }}" aria-label="Go to homepage">
+          <img src="{{ url_for('static', filename='logo/logo.png') }}" alt="Playlytics Logo" height="40" />
+        </a>
+      </div>
+      <div class="nav-right" aria-hidden="true"></div>
+    </nav>
+  </header>
+
+  <main class="game-container" role="main">
+    <article class="game-detail card-two-col" aria-labelledby="game-title">
+      <div class="card-left">
+        {% if game.cover_url %}
+        <img src="{{ game.cover_url }}" alt="Cover of {{ game.name }}" class="cover-img" width="200" height="200" />
+        {% else %}
+        <div class="no-cover"
+          style="width: 200px; height: 200px; background: #ddd; display: flex; align-items: center; justify-content: center; color: #666;">
+          No Image Available
+        </div>
+        {% endif %}
+        <h1 id="game-title" class="card-title">{{ game.name }}</h1>
+
+        <dl class="game-meta">
+
+          <p><strong>Developers/Publishers:</strong><br>
+            {% if game.developer_publisher_details %}
+            {% for dev in game.developer_publisher_details %}
+            {{ dev.name }}<br>
+            Country: {{ dev.country_name or 'Unknown Country' }}<br><br>
+            {% endfor %}
+            {% else %}
+            No developer or publisher information available.
+            {% endif %}
+          </p>
+
+          <p><strong>Release Date:</strong><br>
+            {% if game.first_release_date %}
+            {{ game.first_release_date | datetimeformat }}
+            {% else %}
+            Unknown Release Date
+            {% endif %}
+          </p>
+
+          <p><strong>Rating:</strong><br>
+            {% if game.rating_display %}
+            {{ game.rating_display }}/100
+            {% else %}
+            Unknown Rating
+            {% endif %}
+          </p>
+
+          <p><strong>Genres:</strong><br>
+            {% if game.genre_names %}
+            {{ game.genre_names | join(', ') }}
+            {% else %}
+            Unknown Genres
+            {% endif %}
+          </p>
+
+
+          <p><strong>Age Ratings:</strong><br>
+            {% if game.age_ratings_parsed %}
+            {{ game.age_ratings_parsed | join(', ') }}
+            {% else %}
+            Unknown Age Ratings
+            {% endif %}
+          </p>
+
+          <p><strong>Platforms:</strong><br>
+            {% if game.platform_names %}
+            {{ game.platform_names | join(', ') }}
+            {% else %}
+            Unknown Platforms
+            {% endif %}
+          </p>
+
+          <p><strong>Player Perspectives:</strong><br>
+            {% if game.player_perspectives %}
+            {{ game.player_perspectives | join(', ') }}
+            {% else %}
+            Unknown Player Perspectives
+            {% endif %}
+          </p>
+
+          <p><strong>Game Modes:</strong><br>
+            {% if game.game_mode_names %}
+            {{ game.game_mode_names | join(', ') }}
+            {% else %}
+            Unknown Game Modes
+            {% endif %}
+          </p>
+
+          <p><strong>Themes:</strong><br>
+            {% if game.theme_names %}
+            {{ game.theme_names | join(', ') }}
+            {% else %}
+            Unknown Themes
+            {% endif %}
+          </p>
+
+          <p><strong>Game Engines:</strong><br>
+            {% if game.engine_names %}
+            {{ game.engine_names | join(', ') }}
+            {% else %}
+            Unknown Game Engines
+            {% endif %}
+          </p>
+
+
+          <p><strong>Game Collection:</strong><br>
+            {% if game.collection_names %}
+            {{ game.collection_names | join(', ') }}
+            {% else %}
+            Unknown collection
+            {% endif %}
+          </p>
+
+          <p><strong>Websites:</strong><br>
+            {% if game.websites %}
+            {% for site in game.websites %}
+          <div>
+            <a style="color: #ddd;" href="{{ site.url }}" target="_blank" rel="noopener noreferrer">
+              {{ site.url | url_domain }}
+            </a>
+          </div>
+          {% endfor %}
+          {% else %}
+          <p>No Websites Available</p>
+          {% endif %}
+          </p>
+        </dl>
+      </div>
+
+      <div class="card-right">
+        <section class="media-carousel" aria-label="Game media carousel">
+
+          {% set media_items = [] %}
+          {% if game.video_details %}
+          {% for video in game.video_details %}
+          {% set _ = media_items.append({'type': 'video', 'url': 'https://www.youtube.com/embed/' ~ video.video_id}) %}
+          {% endfor %}
+          {% endif %}
+          {% if game.screenshot_urls %}
+          {% for url in game.screenshot_urls %}
+          {% set _ = media_items.append({'type': 'image', 'url': url}) %}
+          {% endfor %}
+          {% endif %}
+
+          {% if media_items|length > 0 %}
+          <div class="carousel-container" style="position: relative; max-width: 100%; margin-top: 1em;">
+            <button id="carouselPrevBtn" onclick="carouselPrev()"
+              style="position:absolute; top:50%; left:10px; font-size:2em; color:white; background:none; border:none; cursor:pointer; z-index:10;">&#10094;</button>
+
+            <button id="carouselNextBtn" onclick="carouselNext()"
+              style="position:absolute; top:50%; right:10px; font-size:2em; color:white; background:none; border:none; cursor:pointer; z-index:10;">&#10095;</button>
+
+            <div id="carouselSlide" style="overflow: hidden; width: 960px; margin: 0 auto;">
+              <div id="carouselInner" style="display: flex; gap: 10px; transition: transform 0.3s ease;">
+                {% for item in media_items %}
+                <div class="media-thumb" style="width: 150px; flex-shrink: 0; cursor: pointer; position: relative;">
+                  {% if item.type == 'video' %}
+                  <img src="https://img.youtube.com/vi/{{ item.url.split('embed/')[1] }}/0.jpg" alt="Video thumbnail"
+                    style="width: 100%; height: 84px; border: 2px solid #ccc; border-radius: 8px; object-fit: cover;"
+                    onclick="openMediaModal('{{ item.type }}', '{{ item.url }}')">
+                  <div
+                    style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); pointer-events:none;">
+                    <svg width="32" height="32" viewBox="0 0 100 100" fill="white" xmlns="http://www.w3.org/2000/svg">
+                      <polygon points="40,30 70,50 40,70" />
+                    </svg>
+                  </div>
+                  {% elif item.type == 'image' %}
+                  <img src="{{ item.url }}" alt="Screenshot"
+                    style="width: 100%; border: 2px solid #ccc; border-radius: 8px; object-fit: cover;"
+                    onclick="openMediaModal('{{ item.type }}', '{{ item.url }}')">
+                  {% endif %}
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <div id="mediaModal" class="modal"
+            style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; overflow:auto; background-color: rgba(0,0,0,0.9);">
+            <span onclick="closeMediaModal()"
+              style="position:absolute; top:10px; right:25px; color:white; font-size:35px; font-weight:bold; cursor:pointer;">&times;</span>
+            <button onclick="showPrevMedia()"
+              style="position:absolute; top:50%; left:20px; font-size:2em; color:white; background:none; border:none; cursor:pointer;">&#10094;</button>
+            <button onclick="showNextMedia()"
+              style="position:absolute; top:50%; right:20px; font-size:2em; color:white; background:none; border:none; cursor:pointer;">&#10095;</button>
+            <div style="display:flex; justify-content:center; align-items:center; height:100%;">
+              <div id="modalContent" style="max-width: 960px; width: 100%; display: flex; justify-content: center;">
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <p>No media available.</p>
+          {% endif %}
+        </section>
+
+        <dl class="game-meta" style="margin-top: 2em; color: #ddd;">
+          <section class="game-extra-info" aria-label="Additional game information"
+            style="margin-top: 2em; max-width: 1300px; color: #ddd;">
+
+            <article class="game-summary">
+              <h2>Summary</h2>
+              <p>
+                {% if game.summary %}
+                {{ game.summary }}
+                {% else %}
+                No summary available.
+                {% endif %}
+              </p>
+            </article>
+
+            <article class="developer-logos" style="margin-top: 1.5em;">
+              <h2>Developers & Publishers</h2>
+              {% if game.developer_publisher_details %}
+              <ul style="list-style: none; padding-left: 0; display: flex; gap: 1em; flex-wrap: wrap;">
+                {% for dev in game.developer_publisher_details %}
+                <li style="text-align: left; color: #ddd;">
+                  <div>{{ dev.description or 'Unknown description' }}</div>
+                </li>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <p>No developer or publisher information available.</p>
+              {% endif %}
+            </article>
+
+            <article class="game-dlcs" style="margin-top: 2em;">
+              <h2>Downloadable Content (DLCs)</h2>
+              {% if game.dlcs %}
+              <ul>
+                {% for dlc in game.dlcs %}
+                <li>{{ dlc.name }}</li>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <p>No DLCs available.</p>
+              {% endif %}
+            </article>
+
+            <article class="game-tags" style="margin-top: 2em;">
+              <h2>Tags</h2>
+              {% if game.tag_names %}
+              <ul style="list-style: none; padding-left: 0; display: flex; flex-wrap: wrap; gap: 0.5em;">
+                {% for tag in game.tag_names %}
+                <li style="background-color: #444; color: #ddd; padding: 0.2em 0.6em; border-radius: 3px;">{{ tag }}
+                </li>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <p>No tags available.</p>
+              {% endif %}
+            </article>
+
+          </section>
+
+      </div>
+    </article>
+  </main>
+  <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+
+</html>
