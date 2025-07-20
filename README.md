@@ -40,7 +40,7 @@ To run Playlytics locally:
 <pre><code>CLIENT_ID=your_igdb_client_id
 ACCESS_TOKEN=your_igdb_access_token</code></pre>
 
-## How to get the APU key: 
+## How to get the API key: 
 
 In order to use the API, you must have a Twitch Account.
 Sign Up with Twitch for a free account
