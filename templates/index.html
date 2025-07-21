@@ -89,8 +89,12 @@
               </select>
             </div>
 
-            <!-- Search Submit Button (for when user types a query) -->
-            <div class="filter-group" style="margin-top: 1.8rem;">
+            <div class="filter-group">
+              <label for="include_dlcs">Show DLC's?</label>
+              <select name="include_dlcs" id="include_dlcs" onchange="this.form.submit()">
+                <option value="off" {% if not include_dlcs %}selected{% endif %}>No</option>
+                <option value="on" {% if include_dlcs %}selected{% endif %}>Yes</option>
+              </select>
             </div>
 
           </form>
@@ -154,7 +158,8 @@
                               theme=selected_theme,
                               engine=selected_engine,
                               platform=selected_platform,
-                              mode=selected_mode) }}" class="btn">Previous</a>
+                              mode=selected_mode,
+                              include_dlcs='on' if include_dlcs else None) }}" class="btn">Previous</a>
     {% endif %}
 
     Page {{ page }} of {{ total_pages }}
@@ -169,7 +174,8 @@
                               theme=selected_theme,
                               engine=selected_engine,
                               platform=selected_platform,
-                              mode=selected_mode) }}" class="btn">Next</a>
+                              mode=selected_mode,
+                              include_dlcs='on' if include_dlcs else None) }}" class="btn">Next</a>
       {% endif %}
   </div>
   </div>

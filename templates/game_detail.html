@@ -57,8 +57,8 @@
           </p>
 
           <p><strong>Rating:</strong><br>
-            {% if game.rating_display %}
-            {{ game.rating_display }}/100
+            {% if game.rating_name%}
+            {{ game.rating_name}}/100
             {% else %}
             Unknown Rating
             {% endif %}
@@ -243,15 +243,27 @@
             </article>
 
             <article class="game-dlcs" style="margin-top: 2em;">
-              <h2>Downloadable Content (DLCs)</h2>
-              {% if game.dlcs %}
-              <ul>
-                {% for dlc in game.dlcs %}
-                <li>{{ dlc.name }}</li>
-                {% endfor %}
-              </ul>
+              <h2 style="margin-top: 40px;">Downloadable Content (DLCs & Expansions)</h2>
+              {% if game.dlc_details and game.dlc_details|length > 0 %}
+                <div class="dlc-list" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                  {% for dlc in game.dlc_details %}
+                    <div class="dlc-item" style="width: 120px; text-align: center;">
+                      {% if dlc.image_id %}
+                        <a href="{{ url_for('game_detail', game_id=dlc.id) }}" title="{{ dlc.name }}">
+                          <img src="https://images.igdb.com/igdb/image/upload/t_cover_big/{{ dlc.image_id }}.jpg" 
+                              alt="{{ dlc.name }}" style="width: 100%; border-radius: 6px; cursor: pointer;" />
+                        </a>
+                      {% else %}
+                        <div style="width: 100%; height: 160px; background-color: #333; display: flex; align-items: center; justify-content: center; border-radius: 6px; color: #777;">
+                          No image available
+                        </div>
+                      {% endif %}
+                      <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #ccc;">{{ dlc.name }}</p>
+                    </div>
+                  {% endfor %}
+                </div>
               {% else %}
-              <p>No DLCs available.</p>
+                <p>No DLCs available.</p>
               {% endif %}
             </article>
 

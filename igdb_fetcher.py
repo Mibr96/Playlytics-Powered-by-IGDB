@@ -23,6 +23,7 @@ GAME_MODE_URL = "https://api.igdb.com/v4/game_modes"
 ACHIEVEMENT_URL = "https://api.igdb.com/v4/achievements"
 AGE_RATING_URL = "https://api.igdb.com/v4/age_ratings"
 VIDEO_URL = "https://api.igdb.com/v4/game_videos"
+GAME_VERSIONS_URL = "https://api.igdb.com/v4/game_versions"
 
 def get_access_token():
     res = requests.post(AUTH_URL, data={
@@ -79,8 +80,9 @@ def fetch_companies(token, involved_ids):
 
     fields = (
         'id,name,slug,change_date,change_date_format,changed_company_id,checksum,country,created_at,'
-        'description,developed,published,logo.image_id,parent,start_date,start_date_format,status,updated_at,url,websites'
+        'description,logo.image_id,parent,start_date,start_date_format,status,updated_at,url,websites'
     )
+
     company_info = batch_fetch(token, COMPANY_INFO_URL, company_ids, fields=fields)
     company_dict = {c['id']: c for c in company_info}
 
@@ -98,7 +100,25 @@ def fetch_game_names(token, ids):
     raw = batch_fetch(token, GAME_URL, ids, fields='id,name')
     return {g['id']: g['name'] for g in raw}
 
-def fetch_game_data(token, total_limit=10000, batch_size=500):
+def fetch_game_versions(token, game_ids):
+    headers = {
+        'Client-ID': CLIENT_ID,
+        'Authorization': f'Bearer {token}',
+    }
+    all_versions = []
+    batch_size = 300
+    for i in range(0, len(game_ids), batch_size):
+        batch = game_ids[i:i+batch_size]
+        query = f'fields id,game,games,features,url; where game = ({",".join(map(str,batch))}); limit {batch_size};'
+        res = requests.post(GAME_VERSIONS_URL, headers=headers, data=query)
+        if res.status_code == 200:
+            all_versions.extend(res.json())
+        else:
+            print(f"Failed fetching game_versions batch {i}: {res.text}")
+        sleep(0.25)
+    return all_versions
+
+def fetch_game_data(token, total_limit=1000000, batch_size=500):
     headers = {
         'Client-ID': CLIENT_ID,
         'Authorization': f'Bearer {token}',
@@ -110,7 +130,7 @@ def fetch_game_data(token, total_limit=10000, batch_size=500):
         'alternative_names,collections,dlcs,expansions,forks,remakes,remasters,ports,game_engines,'
         'game_localizations,game_modes,game_status,involved_companies,multiplayer_modes,similar_games,'
         'themes,videos,websites,genres,first_release_date,platforms,screenshots.image_id,dlcs,'
-        'franchise'
+        'franchise, parent_game'
     )
     while len(all_games) < total_limit:
         query = f'fields {fields_to_fetch}; where first_release_date > {release_timestamp}; limit {batch_size}; offset {offset};'
@@ -127,6 +147,14 @@ def fetch_game_data(token, total_limit=10000, batch_size=500):
         sleep(0.25)
     print(f"Finished fetching games. Total fetched: {len(all_games)}")
     return all_games[:total_limit]
+
+def tag_dlc(game): # Standalone Expansions and DLC's are practically the same thing. Therefore I will filter it off. 
+    dlc_categories = [1, 2, 4] # 0: Main Game, 1: DLC, 2: Expansion, 3: Bundle, 4: Standalone Expansion
+    if game.get("category") in dlc_categories:
+        return True
+    if game.get("parent_game"):
+        return True
+    return False
 
 def main():
     print("Getting access token...")
@@ -170,6 +198,20 @@ def main():
 
     age_rating_ids = [ar for game in games for ar in game.get("age_ratings", [])]
     age_ratings_raw = batch_fetch(token, AGE_RATING_URL, age_rating_ids, fields='id,category,rating')
+
+    dlc_ids = [dlc for game in games for dlc in game.get("dlcs", [])]
+    dlc_data = batch_fetch(token, GAME_URL, list(set(dlc_ids)), fields='id,name,cover.image_id')
+
+    dlc_map = {}
+    for dlc in dlc_data:
+        dlc_map[dlc['id']] = {
+            "id": dlc['id'],
+            "name": dlc.get('name', 'Unknown'),
+            "image_id": dlc.get('cover', {}).get('image_id'),
+            "is_dlc": True
+        }
+    
+    
 
     AGE_RATING_CATEGORIES = {
         1: "ESRB",
@@ -238,6 +280,9 @@ def main():
         game["achievement_details"] = [achievement_map.get(aid) for aid in game.get("achievements", [])]
         game["age_rating_details"] = [age_rating_map.get(ar_id, {"category_name": "Unknown", "rating_name": "Unknown"}) for ar_id in game.get("age_ratings", [])]
         game["video_details"] = [video_map.get(vid) for vid in game.get("videos", [])]
+        game["dlc_details"] = [dlc_map.get(dlc_id, {"id": dlc_id, "name": "Unknown", "image_id": None, "is_dlc": True}) for dlc_id in game.get("dlcs", [])]
+        game["is_dlc"] = tag_dlc(game)
+        
 
     os.makedirs("data", exist_ok=True)
     with open("data/games_output.json", "w", encoding="utf-8") as f:

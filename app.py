@@ -149,7 +149,7 @@ def home():
         return "No game data found. Please run igdb_fetcher.py first."
 
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 52, type=int)
+    per_page = request.args.get('per_page', 55, type=int) #55 is the correct count for HD res. Will be missing 1 on 2k, now sure how to fix that yet.
 
     query = request.args.get('q', '').lower()
     selected_genre = request.args.get('genre', '')
@@ -160,6 +160,7 @@ def home():
     selected_engine = request.args.get('engine', '')
     selected_platform = request.args.get('platform', '')
     selected_mode = request.args.get('mode', '')
+    include_dlcs = request.args.get('include_dlcs') == 'on'
 
     for game in all_games:
         if "first_release_date" in game:
@@ -167,7 +168,8 @@ def home():
         else:
             game["release_year"] = "Unknown"
 
-    filtered_games = all_games
+    filtered_games = [g for g in all_games if include_dlcs or not g.get("is_dlc", False)]
+
     if query:
         filtered_games = [g for g in filtered_games if query in g.get('name', '').lower()]
 
@@ -229,7 +231,8 @@ def home():
         platforms=all_platforms,
         selected_platform=selected_platform,
         modes=all_game_modes,
-        selected_mode=selected_mode
+        selected_mode=selected_mode,
+        include_dlcs = request.args.get("include_dlcs", "off") == "on"
     )
 
 
