@@ -118,7 +118,7 @@ def fetch_game_versions(token, game_ids):
         sleep(0.25)
     return all_versions
 
-def fetch_game_data(token, total_limit=100, batch_size=500):
+def fetch_game_data(token, total_limit=10000000, batch_size=500):
     headers = {
         'Client-ID': CLIENT_ID,
         'Authorization': f'Bearer {token}',

@@ -167,7 +167,7 @@ def home():
             game["release_year"] = datetime.utcfromtimestamp(game["first_release_date"]).year
         else:
             game["release_year"] = "Unknown"
-
+    
     filtered_games = [g for g in all_games if include_dlcs or not g.get("is_dlc", False)]
 
     if query:
@@ -276,6 +276,11 @@ def game_detail(game_id):
         abort(404, description="Game not found.")
 
     game = prepare_games([game])[0]
+    dlcs = [g for g in all_games if g.get("parent_game") == game_id]
+    dlcs = prepare_games(dlcs)
+
+    game["dlc_details"] = dlcs
+
     return render_template("game_detail.html", game=game)
 
 @app.template_filter('url_domain')
