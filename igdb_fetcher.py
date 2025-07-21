@@ -80,7 +80,7 @@ def fetch_companies(token, involved_ids):
 
     fields = (
         'id,name,slug,change_date,change_date_format,changed_company_id,checksum,country,created_at,'
-        'description,logo.image_id,parent,start_date,start_date_format,status,updated_at,url,websites'
+        'description,developed,published,logo.image_id,parent,start_date,start_date_format,status,updated_at,url,websites'
     )
 
     company_info = batch_fetch(token, COMPANY_INFO_URL, company_ids, fields=fields)
@@ -118,7 +118,7 @@ def fetch_game_versions(token, game_ids):
         sleep(0.25)
     return all_versions
 
-def fetch_game_data(token, total_limit=1000000, batch_size=500):
+def fetch_game_data(token, total_limit=100, batch_size=500):
     headers = {
         'Client-ID': CLIENT_ID,
         'Authorization': f'Bearer {token}',
