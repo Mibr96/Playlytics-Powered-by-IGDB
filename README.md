@@ -67,5 +67,5 @@ Pull requests are welcome! Feel free to fork this repo and submit a PR with sugg
 
 ## Final Screenshots for now.
 <img width="3379" height="1259" alt="image" src="https://github.com/user-attachments/assets/2bc3a2a0-bd9a-4001-9e8a-add085bd7d76" />
-<img width="1617" height="907" alt="image" src="https://github.com/user-attachments/assets/98650bd1-01ba-4fb9-86a5-0d9e4fcd1f53" />
+<img width="1624" height="904" alt="image" src="https://github.com/user-attachments/assets/3660eaf9-7587-4e6c-b5dc-c4318ecf4617" />
 
