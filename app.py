@@ -149,7 +149,7 @@ def home():
         return "No game data found. Please run igdb_fetcher.py first."
 
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 51, type=int)
+    per_page = request.args.get('per_page', 52, type=int)
 
     query = request.args.get('q', '').lower()
     selected_genre = request.args.get('genre', '')
