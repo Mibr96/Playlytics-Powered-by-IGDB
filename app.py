@@ -290,6 +290,29 @@ def url_domain(value):
         return parsed_url.netloc.replace('www.', '')
     except Exception:
         return value
+    
+@app.route("/companies")
+def companies():
+    with open("data/companies_output.json", "r", encoding="utf-8") as f:
+        raw_companies = json.load(f)
+
+    unique_companies = {}
+    for key, company in raw_companies.items():
+        company_id = company.get("id")
+        if company_id:
+            unique_companies[company_id] = company
+
+
+    developers = [c for c in unique_companies.values() if c.get("developed")]
+    developer_ids = {c["id"] for c in developers}
+
+    publishers = [
+        c for c in unique_companies.values()
+        if c.get("published") and c["id"] not in developer_ids
+    ]
+
+    return render_template("companies.html", developers=developers, publishers=publishers)
+
 
 if __name__ == '__main__':
     app.run(debug=False)

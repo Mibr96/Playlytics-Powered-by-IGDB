@@ -23,7 +23,6 @@ GAME_MODE_URL = "https://api.igdb.com/v4/game_modes"
 ACHIEVEMENT_URL = "https://api.igdb.com/v4/achievements"
 AGE_RATING_URL = "https://api.igdb.com/v4/age_ratings"
 VIDEO_URL = "https://api.igdb.com/v4/game_videos"
-GAME_VERSIONS_URL = "https://api.igdb.com/v4/game_versions"
 
 def get_access_token():
     res = requests.post(AUTH_URL, data={
@@ -100,23 +99,6 @@ def fetch_game_names(token, ids):
     raw = batch_fetch(token, GAME_URL, ids, fields='id,name')
     return {g['id']: g['name'] for g in raw}
 
-def fetch_game_versions(token, game_ids):
-    headers = {
-        'Client-ID': CLIENT_ID,
-        'Authorization': f'Bearer {token}',
-    }
-    all_versions = []
-    batch_size = 300
-    for i in range(0, len(game_ids), batch_size):
-        batch = game_ids[i:i+batch_size]
-        query = f'fields id,game,games,features,url; where game = ({",".join(map(str,batch))}); limit {batch_size};'
-        res = requests.post(GAME_VERSIONS_URL, headers=headers, data=query)
-        if res.status_code == 200:
-            all_versions.extend(res.json())
-        else:
-            print(f"Failed fetching game_versions batch {i}: {res.text}")
-        sleep(0.25)
-    return all_versions
 
 def fetch_game_data(token, total_limit=10000000, batch_size=500):
     headers = {
@@ -129,7 +111,7 @@ def fetch_game_data(token, total_limit=10000000, batch_size=500):
         'id,name,summary,rating,rating_count,follows,hypes,cover.image_id,artworks.image_id,age_ratings,'
         'alternative_names,collections,dlcs,expansions,forks,remakes,remasters,ports,game_engines,'
         'game_localizations,game_modes,game_status,involved_companies,multiplayer_modes,similar_games,'
-        'themes,videos,websites,genres,first_release_date,platforms,screenshots.image_id,dlcs,'
+        'themes,videos,websites,genres,first_release_date,platforms,screenshots.image_id,collections,'
         'franchise, parent_game'
     )
     while len(all_games) < total_limit:
@@ -191,6 +173,7 @@ def main():
     related_ids = [gid for game in games for gid in game.get("collections", []) +
                    game.get("remakes", []) + game.get("remasters", []) + game.get("ports", [])]
     name_map = fetch_game_names(token, list(set(similar_ids + related_ids)))
+    similar_game_data = batch_fetch(token, GAME_URL, list(set(similar_ids)), fields='id,name,cover.image_id')
 
     achievement_ids = [aid for game in games for aid in game.get("achievements", [])]
     achievements = batch_fetch(token, ACHIEVEMENT_URL, achievement_ids, fields='id,name,description,hidden')
@@ -210,8 +193,6 @@ def main():
             "image_id": dlc.get('cover', {}).get('image_id'),
             "is_dlc": True
         }
-    
-    
 
     AGE_RATING_CATEGORIES = {
         1: "ESRB",
@@ -272,7 +253,6 @@ def main():
         game["game_mode_names"] = [mode_dict.get(i, "Unknown") for i in game.get("game_modes", [])]
         game["developer_publisher_details"] = [company_map.get(cid) for cid in game.get("involved_companies", [])]
         game["release_date"] = convert_timestamp(game.get("first_release_date"))
-        game["similar_game_names"] = [name_map.get(sid, "Unknown") for sid in game.get("similar_games", [])]
         game["collection_names"] = [name_map.get(cid, "Unknown") for cid in game.get("collections", [])]
         game["remake_names"] = [name_map.get(cid, "Unknown") for cid in game.get("remakes", [])]
         game["remaster_names"] = [name_map.get(cid, "Unknown") for cid in game.get("remasters", [])]
@@ -282,12 +262,40 @@ def main():
         game["video_details"] = [video_map.get(vid) for vid in game.get("videos", [])]
         game["dlc_details"] = [dlc_map.get(dlc_id, {"id": dlc_id, "name": "Unknown", "image_id": None, "is_dlc": True}) for dlc_id in game.get("dlcs", [])]
         game["is_dlc"] = tag_dlc(game)
-        
+        game["similar_game_details"] = [
+            {
+                "id": sid,
+                "name": name_map.get(sid, "Unknown"),
+                "image_id": (next((g['cover']['image_id'] for g in similar_game_data if g['id'] == sid and 'cover' in g), None))
+            }
+            for sid in game.get("similar_games", [])
+        ]
 
     os.makedirs("data", exist_ok=True)
     with open("data/games_output.json", "w", encoding="utf-8") as f:
         json.dump(games, f, indent=2, ensure_ascii=False)
     print("Data saved to data/games_output.json")
+
+    involved_ids = [i for game in games for i in game.get("involved_companies", [])]
+    company_map = fetch_companies(token, involved_ids)
+
+    dev_pub_game_ids = []
+    for company in company_map.values():
+        dev_pub_game_ids.extend(company.get("developed", []))
+        dev_pub_game_ids.extend(company.get("published", []))
+
+    print("Fetching names for developed/published games...")
+    dev_pub_name_map = fetch_game_names(token, list(set(dev_pub_game_ids)))
+
+    for company in company_map.values():
+        company["developed_names"] = [dev_pub_name_map.get(gid, "Unknown") for gid in company.get("developed", [])]
+        company["published_names"] = [dev_pub_name_map.get(gid, "Unknown") for gid in company.get("published", [])]
+
+    print("Saving company data to file...")
+    os.makedirs("data", exist_ok=True)
+    with open("data/companies_output.json", "w", encoding="utf-8") as f:
+        json.dump(company_map, f, indent=2, ensure_ascii=False)
+
 
 if __name__ == "__main__":
     main()

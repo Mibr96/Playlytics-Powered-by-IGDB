@@ -90,6 +90,18 @@
             </div>
 
             <div class="filter-group">
+            <label for="platform">Platform</label>
+            <select name="platform" id="platform" onchange="this.form.submit()">
+              <option value="">All Platforms</option>
+              {% for platform in platforms %}
+                <option value="{{ platform }}" {% if platform == selected_platform %}selected{% endif %}>
+                  {{ platform }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+            <div class="filter-group">
               <label for="include_dlcs">Show DLC's?</label>
               <select name="include_dlcs" id="include_dlcs" onchange="this.form.submit()">
                 <option value="off" {% if not include_dlcs %}selected{% endif %}>No</option>

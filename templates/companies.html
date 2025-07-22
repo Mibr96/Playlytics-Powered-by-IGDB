@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Playlytics – Companies</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+  <header>
+    <nav class="navbar">
+      <div class="nav-left"></div>
+      <div class="nav-center">
+        <img src="{{ url_for('static', filename='logo/logo.png') }}" alt="Playlytics Logo"
+          style="height: 40px; width: auto;">
+      </div>
+      <div class="nav-right"></div>
+    </nav>
+  </header>
+
+  <div class="container" style="margin-left: auto;">
+  </div>
+
+    <div class="games-grid">
+  {% for company in developers %}
+  <div class="card">
+    {% if company.logo %}
+      <img src="https://images.igdb.com/igdb/image/upload/t_1080p/{{ company.logo.image_id }}.jpg" alt="{{ company.name }} logo" class="comp-cover-img" />
+    {% else %}
+      <div class="comp-no-cover">No Logo</div>
+    {% endif %}
+    <h2 class="card-title" style="text-align: center;">
+      {{ company.name }}
+    </h2>
+    <p class="game-meta">Country: {{ company.country or "Unknown" }}</p>
+    <div class="card-footer">
+      <button class="stats-button" disabled>Details</button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+</body>
+</html>
