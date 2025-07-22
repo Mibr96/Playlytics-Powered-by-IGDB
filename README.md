@@ -65,7 +65,9 @@ Add more filters (e.g. time-to-beat, release year)
 ## 🤝 Contributing
 Pull requests are welcome! Feel free to fork this repo and submit a PR with suggestions, improvements, or new features. Let's make Playlytics even better together!
 
-## Final Screenshots for now.
-<img width="3379" height="1259" alt="image" src="https://github.com/user-attachments/assets/2bc3a2a0-bd9a-4001-9e8a-add085bd7d76" />
-<img width="1624" height="904" alt="image" src="https://github.com/user-attachments/assets/3660eaf9-7587-4e6c-b5dc-c4318ecf4617" />
+## Updated Screenshots as I go.
+<img width="3400" height="1246" alt="image" src="https://github.com/user-attachments/assets/7330319b-389d-4af2-93ab-69a252ecd0c3" />
+
+<img width="3418" height="1222" alt="image" src="https://github.com/user-attachments/assets/b7dff079-e733-40dc-8dfb-5714d35bc2a8" />
+
 
