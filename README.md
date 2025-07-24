@@ -11,9 +11,6 @@
 - 📊 **Interactive Stats**: Explore trends and game analytics visualized using Chart.js. ( WORK IN PROGRESS ) 
 - 🎯 **Search & Filters**: Easily find games with advanced filters like platform, developer, and multiplayer support.
 
-<img width="3337" height="1249" alt="image" src="https://github.com/user-attachments/assets/84b31608-8c40-454a-9daf-fac3c3d9f5ed" />
-
-
 ---
 
 ## 🛠️ Tech Stack
@@ -66,8 +63,9 @@ Add more filters (e.g. time-to-beat, release year)
 Pull requests are welcome! Feel free to fork this repo and submit a PR with suggestions, improvements, or new features. Let's make Playlytics even better together!
 
 ## Updated Screenshots as I go.
-<img width="3400" height="1246" alt="image" src="https://github.com/user-attachments/assets/7330319b-389d-4af2-93ab-69a252ecd0c3" />
+<img width="1920" height="3456" alt="image" src="https://github.com/user-attachments/assets/e8cc82cc-835b-49f0-8fe9-5e0242a2438a" />
 
-<img width="3418" height="1222" alt="image" src="https://github.com/user-attachments/assets/b7dff079-e733-40dc-8dfb-5714d35bc2a8" />
+
+<img width="1920" height="1268" alt="image" src="https://github.com/user-attachments/assets/f4e60c24-5ead-4ee4-a273-dc08d0c7e750" />
 
 
